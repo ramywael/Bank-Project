@@ -382,8 +382,29 @@ void ShowDeleteMenu() {
 	DeleteAccountFromFile(vClients, userInputAccountNumber);
 }
 
-void ShowFindClientMenu() {
+void DisplayFindClientHeader() {
+	cout << "\n\n------------------------------------\n";
+	cout << setw(30) << right << "Find Client Screen \n";
+	cout << "------------------------------------\n";
+}
 
+void ShowFindClientMenu() {
+	DisplayFindClientHeader();
+	stClientInfo client;
+	vector<stClientInfo> vClients = ReadDataFromFile();
+	string userInputAccountNumber = ReadClientNumber();
+	if (FindClientNumber(userInputAccountNumber, vClients, client)) {
+		ShowClientCard(client);
+	}
+	else {
+		cout << "Sorry ,We Couldn't Find this account [" << userInputAccountNumber << "] \n";
+	}
+}
+
+void DisplayExitScreen() {
+	cout << "\n\n-----------------------------------\n";
+	cout << setw(25) << right << "Program Ends :-)\n";
+	cout << "-----------------------------------\n";
 }
 
 void ChechUserOption(short userOption) {
@@ -419,15 +440,14 @@ void ChechUserOption(short userOption) {
 
 	case enUserChoiceOption::FindClient:
 		system("cls");
-		ShowClientsInfo();
+		ShowFindClientMenu();
 		GoBackToMainMenu();
 		break;
 
 
 	case enUserChoiceOption::Exit:
 		system("cls");
-		ShowClientsInfo();
-		GoBackToMainMenu();
+		DisplayExitScreen();
 		break;
 
 	default:
