@@ -285,6 +285,95 @@ bool DeleteAccountFromFile(vector<stClientInfo>& vClients, string userInputAccou
 	}
 }
 
+bool MarkClientUpdate(vector<stClientInfo>& vClients, string userInputAccountNumber) {
+	for (stClientInfo & client : vClients) {
+		if (client.AccountNumber == userInputAccountNumber) {
+			client.isUpdated = true;
+			return true;
+		}
+	}
+	return false;
+}
+
+void InputUpdatedData(stClientInfo &client) {
+	cout << "Enter Pin Code : ";
+	getline(cin >> ws, client.Pincode);
+
+	cout << "Enter Name : ";
+	getline(cin, client.ClientName);
+
+	cout << "Enter Phone : ";
+	getline(cin, client.Phone);
+
+
+	cout << "Enter Balance : ";
+	cin >> client.AccountBalance;
+
+}
+
+
+vector<stClientInfo> UpdateClient(vector<stClientInfo>& vClients) {
+		for (stClientInfo& c : vClients) {
+			if (c.isUpdated == true) {
+				InputUpdatedData(c);
+			}
+		}
+	return vClients;
+}
+
+
+void SaveUpdatedDataToFile(stClientInfo &client,vector<stClientInfo>& vClients) {
+	fstream file;
+	string dataLine;
+	file.open(FileName, ios::out);
+	if (file.is_open()) {
+		for (stClientInfo& client : vClients) {
+			dataLine = ConvertLineToRecord(client);
+			file << dataLine << "\n";
+		}
+	}
+	file.close();
+}
+
+bool UpdateNewClient(vector<stClientInfo>& vClients, string userInputAccountNumber) {
+	char userChoice = 'n';
+	stClientInfo client;
+	if (FindClientNumber(userInputAccountNumber, vClients, client)) {
+		ShowClientCard(client);
+		cout << "Are You Sure That Do You Want to update this account ? :";
+		cin >> userChoice;
+		if (tolower(userChoice) == 'y') {
+			MarkClientUpdate(vClients, userInputAccountNumber);
+			UpdateClient(vClients);
+			SaveUpdatedDataToFile(client,vClients);
+
+			//Refresh
+			vClients = ReadDataFromFile();
+
+			cout << "Successfully Updated \n";
+			return true;
+		}
+	}
+	else {
+		cout << "Sorry We Couldn't Find This Account [" << userInputAccountNumber << "]" << "\n";
+	}
+	return false;
+}
+
+
+void DisplayUpdateHeader() {
+	cout << "\n\n-------------------------------------------------\n";
+	cout << setw(35) << right << "Update Client Screen \n";
+	cout << "-------------------------------------------------\n";
+}
+
+void ShowUpdateMenu() {
+	DisplayUpdateHeader();
+	vector<stClientInfo> vClients = ReadDataFromFile();
+	string userInputAccountNumber = ReadClientNumber();
+	UpdateNewClient(vClients, userInputAccountNumber);
+}
+
 
 void ShowDeleteMenu() {
 	HeaderDeleteMenu();
@@ -293,6 +382,9 @@ void ShowDeleteMenu() {
 	DeleteAccountFromFile(vClients, userInputAccountNumber);
 }
 
+void ShowFindClientMenu() {
+
+}
 
 void ChechUserOption(short userOption) {
 	switch ((enUserChoiceOption)userOption)
@@ -312,7 +404,7 @@ void ChechUserOption(short userOption) {
 
 	case enUserChoiceOption::UpdateClientInfo:
 		system("cls");
-		ShowDeleteMenu();
+		ShowUpdateMenu();
 		GoBackToMainMenu();
 		break;
 
