@@ -10,12 +10,12 @@ using namespace std;
 string const FileName = "MyFile.txt";
 void DisplayMenu();
 enum enUserChoiceOption {
-	ShowClientList=1,
-	AddNewClient=2,
-	DeleteClient=3,
-	UpdateClientInfo=4,
-	FindClient=5,
-	Exit=6
+	ShowClientList = 1,
+	AddNewClient = 2,
+	DeleteClient = 3,
+	UpdateClientInfo = 4,
+	FindClient = 5,
+	Exit = 6
 };
 
 struct stClientInfo {
@@ -24,11 +24,11 @@ struct stClientInfo {
 	string ClientName;
 	string Phone;
 	double AccountBalance;
-	bool isUpdated=false;
-	bool isDeleted=false;
+	bool isUpdated = false;
+	bool isDeleted = false;
 };
 
-vector<string> SplitString(string line,string sperator="#//#") {
+vector<string> SplitString(string line, string sperator = "#//#") {
 	short pos = 0;
 	string sWord;
 	vector<string> vString;
@@ -47,7 +47,7 @@ vector<string> SplitString(string line,string sperator="#//#") {
 
 stClientInfo ConvertRecordToLine(string line) {
 	stClientInfo Client;
-	vector<string> vString=SplitString(line);
+	vector<string> vString = SplitString(line);
 	//Now We have To Pass The Value of string to client 
 
 	Client.AccountNumber = vString[0];
@@ -113,7 +113,7 @@ void ShowClientsInfo() {
 		PrintClientRecord(client);
 		cout << "\n";
 	}
-	
+
 }
 
 void GoBackToMainMenu() {
@@ -154,7 +154,7 @@ stClientInfo CreateNewClient() {
 		cout << "Client with [" << Client.AccountNumber << "] already exists,\n\n";
 		cout << "Enter Another Account Number ? :";
 		getline(cin >> ws, Client.AccountNumber);
-	 }
+	}
 	cout << "\nEnter PinCode ? :";
 	getline(cin, Client.Pincode);
 	cout << "\nEnter Client Name ? :";
@@ -165,20 +165,21 @@ stClientInfo CreateNewClient() {
 	cin >> Client.AccountBalance;
 	return Client;
 }
-string ConvertLineToRecord(stClientInfo client,string sperator="#//#") {
+
+string ConvertLineToRecord(stClientInfo client, string sperator = "#//#") {
 	string stCompletedLine = client.AccountNumber + sperator
 		+ client.Pincode + sperator
 		+ client.ClientName + sperator
 		+ client.Phone + sperator
 		+ to_string(client.AccountBalance);
-		return stCompletedLine;
- }
+	return stCompletedLine;
+}
 
 void AddDataToFile(string data) {
 	fstream file;
 	file.open(FileName, ios::out | ios::app);
 	if (file.is_open()) {
-		file << data<<"\n";
+		file << data << "\n";
 	}
 	file.close();
 }
@@ -194,6 +195,102 @@ void AddClients() {
 		cout << "Do You Want To Add More New Clients ? :";
 		cin >> userChoice;
 	} while (tolower(userChoice) == 'y');
+}
+
+
+bool FindClientNumber(string userInputAccNumber, vector<stClientInfo>& vClients,stClientInfo &client) {
+	for (stClientInfo& c : vClients) {
+		if (c.AccountNumber == userInputAccNumber) {
+			 client=c;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+vector<stClientInfo> SaveNewDataToFile(vector<stClientInfo> vClients) {
+	fstream file;
+	stClientInfo client;
+	string dataLine;
+	file.open(FileName, ios::out);
+	if (file.is_open()) {
+		for (stClientInfo& c : vClients) {
+			if (c.isDeleted == false) {
+				dataLine = ConvertLineToRecord(c);
+				file << dataLine << "\n";
+			}
+		}
+		file.close();
+	}
+	return vClients;
+}
+
+void ShowClientCard(stClientInfo client) {
+	cout << "The Following is the client details : \n";
+	cout << "\n------------------------------------------------\n";
+	cout << "Account Number :" << client.AccountNumber;
+	cout << "\nAccount PinCode :" << client.Pincode;
+	cout << "\nAccount Name :" << client.ClientName;
+	cout << "\nAccount Phone :" << client.Phone;
+	cout << "\nAccount Balance :" << client.AccountBalance;
+	cout << "\n------------------------------------------------\n";
+
+}
+
+bool MarkDeleteClientFromFile(string AccountNumber, vector<stClientInfo>& vClients) {
+	for (stClientInfo& client : vClients) {
+		if (client.AccountNumber == AccountNumber) {
+			client.isDeleted = true;
+			return true;
+		}
+	}
+	return false;
+}
+
+void HeaderDeleteMenu() {
+	cout << "\n--------------------------------------\n";
+	cout << setw(25) << right << "Delete Client Screen";
+	cout << "\n--------------------------------------\n";
+
+}
+
+string ReadClientNumber() {
+	string accountNumber;
+	cout << "Please Enter The Account Number \n";
+	getline(cin >> ws, accountNumber);
+	return accountNumber;
+}
+
+
+bool DeleteAccountFromFile(vector<stClientInfo>& vClients, string userInputAccountNumber) {
+	char userChoice = 'n';
+	stClientInfo client;
+	if (FindClientNumber(userInputAccountNumber, vClients, client)) {
+		ShowClientCard(client);
+		cout << "\n\n Are You Sure That Do You Want To Delete This Account ? :";
+		cin >> userChoice;
+		if (tolower(userChoice) == 'y') {
+			MarkDeleteClientFromFile(userInputAccountNumber, vClients);
+			SaveNewDataToFile(vClients);
+			//Refresh Clients
+			vClients = ReadDataFromFile();
+			cout << "\nDelete Completed Successfully \n";
+			return true;
+		}
+	}
+	else {
+		cout << "Sorry We Couldn't Find This Account [" << userInputAccountNumber << "]" << "\n";
+		return false;
+	}
+}
+
+
+void ShowDeleteMenu() {
+	HeaderDeleteMenu();
+	vector<stClientInfo> vClients = ReadDataFromFile();
+	string userInputAccountNumber = ReadClientNumber();
+	DeleteAccountFromFile(vClients, userInputAccountNumber);
 }
 
 
@@ -215,14 +312,14 @@ void ChechUserOption(short userOption) {
 
 	case enUserChoiceOption::UpdateClientInfo:
 		system("cls");
-		ShowClientsInfo();
+		ShowDeleteMenu();
 		GoBackToMainMenu();
 		break;
 
 
 	case enUserChoiceOption::DeleteClient:
 		system("cls");
-		ShowClientsInfo();
+		ShowDeleteMenu();
 		GoBackToMainMenu();
 		break;
 
@@ -246,6 +343,9 @@ void ChechUserOption(short userOption) {
 	}
 
 }
+
+
+
 
 void DisplayMenu() {
 	system("cls");
