@@ -136,13 +136,23 @@ void HeaderAddNewClient() {
 
 
 bool CheckNewClientIsExist(string clientAccountNumber) {
-	vector<stClientInfo> vClients = ReadDataFromFile();
-	for (int i = 0;i < vClients.size();i++) {
-		if (vClients[i].AccountNumber == clientAccountNumber) {
-			return true;
+	fstream file;
+	string line;
+	stClientInfo client;
+	vector<stClientInfo> vClients;
+	file.open(FileName, ios::in);
+	if (file.is_open()) {
+		while (getline(file, line)) {
+			client = ConvertRecordToLine(line);
+			if (client.AccountNumber == clientAccountNumber) {
+				file.close();
+				return true;
+			}
+			vClients.push_back(client);
 		}
+		file.close();
+		return false;
 	}
-	return false;
 }
 
 
@@ -461,18 +471,16 @@ void ChechUserOption(short userOption) {
 
 void DisplayMenu() {
 	system("cls");
-
-	cout << "===========================================================\n";
-	cout << setw(30) << right << "Main Menu Screen";
-	cout << "\n===========================================================\n";
-
-	cout << "[1]  Show Client List .\n";
-	cout << "[2]  Add New Client .\n";
-	cout << "[3]  Delete Client  .\n";
-	cout << "[4]  Update Client Info .\n";
-	cout << "[5]  Find Client .\n";
-	cout << "[6]  Exit .\n";
-	cout << "===========================================================";
+	cout << "===========================================\n";
+	cout << "\t\tMain Menue Screen\n";
+	cout << "===========================================\n";
+	cout << "\t[1] Show Client List.\n";
+	cout << "\t[2] Add New Client.\n";
+	cout << "\t[3] Delete Client.\n";
+	cout << "\t[4] Update Client Info.\n";
+	cout << "\t[5] Find Client.\n";
+	cout << "\t[6] Exit.\n";
+	cout << "===========================================\n";
 	ChechUserOption((enUserChoiceOption)ReadPostiveNumber());
 
 }
