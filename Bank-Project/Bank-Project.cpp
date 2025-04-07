@@ -453,7 +453,7 @@ void UploadDepositeToFile(vector<stClientInfo>& vClients) {
 	}
 }
 
-bool AddDeposite(stClientInfo& client, vector<stClientInfo>& vClients,string accountNumber) {
+bool AddDeposite(vector<stClientInfo>& vClients,string accountNumber) {
 	int depositeAmount;
 	char userChoice;
 
@@ -499,7 +499,7 @@ void MakeDeposite() {
 	} while (!isFound);	
 	if (isFound) {
 		ShowClientCard(client);
-		if (AddDeposite(client, vClients,userInputAccountNumber)) {
+		if (AddDeposite(vClients,userInputAccountNumber)) {
 			cout << "The Process of making deposite is successfully done\n";
 		}
 		else {
@@ -514,6 +514,37 @@ void GoBackToMainMenuTransaction() {
 	system("pause");
 	DisplayTransactionMenu();
 }
+
+void PrintBalancesOptionInfo(stClientInfo client) {
+	cout << "| " << setw(15) << left << client.AccountNumber;
+	cout << "| " << setw(40) << left << client.ClientName;
+	cout << "| " << setw(12) << left << client.AccountBalance;
+}
+
+
+void TotalBalancesOption() {
+	vector <stClientInfo> vClients = ReadDataFromFile();
+	double totalBalances = 0;
+	cout << "\n\t\t\t\t\tBalances List (" << vClients.size() << ") Client(s).";
+	cout << "\n_______________________________________________________";
+	cout << "__________________________________________________________\n" << endl;
+
+	cout << "| " << left << setw(15) << "Accout Number";
+	cout << "| " << left << setw(40) << "Client Name";
+	cout << "| " << left << setw(12) << "Balance";
+	cout << "\n_______________________________________________________";
+	cout << "__________________________________________________________\n" << endl;
+
+	for (stClientInfo& c : vClients) {
+		PrintBalancesOptionInfo(c);
+		totalBalances += c.AccountBalance;
+		cout << endl;
+	}
+	cout << "\n_______________________________________________________";
+	cout << "__________________________________________________________\n" << endl;
+	cout << "\t\t\t\t\t Total Balances = " << totalBalances << "\n";
+}
+
 
 
 void CheckUserInputTransactionType(short userInput) {
@@ -534,7 +565,7 @@ void CheckUserInputTransactionType(short userInput) {
 
 	case enUserTransactionType::Totalbalances:
 		system("cls");
-		MakeDeposite();
+		TotalBalancesOption();
 		GoBackToMainMenuTransaction();
 		break;
 
