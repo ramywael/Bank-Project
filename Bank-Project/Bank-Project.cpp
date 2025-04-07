@@ -463,6 +463,7 @@ void AddDeposite(vector<stClientInfo>& vClients,double amount,string accountNumb
 		if (c.AccountNumber==accountNumber) {
 			c.AccountBalance += amount;
 			SaveUpdatedDataToFile(vClients);
+			cout << "Done Successfully with thie transaction \n";
 		}
 	}
 }
@@ -524,15 +525,20 @@ void TotalBalancesOption() {
 	cout << "| " << left << setw(12) << "Balance";
 	cout << "\n_______________________________________________________";
 	cout << "__________________________________________________________\n" << endl;
-
-	for (stClientInfo& c : vClients) {
-		PrintBalancesOptionInfo(c);
-		totalBalances += c.AccountBalance;
-		cout << endl;
+	if (vClients.size() == 0) {
+		cout << "\t\t\t\t\t There is no clients yet";
 	}
-	cout << "\n_______________________________________________________";
-	cout << "__________________________________________________________\n" << endl;
-	cout << "\t\t\t\t\t Total Balances = " << totalBalances << "\n";
+	else {
+		for (stClientInfo& c : vClients) {
+			PrintBalancesOptionInfo(c);
+			totalBalances += c.AccountBalance;
+			cout << endl;
+		}
+		cout << "\n_______________________________________________________";
+		cout << "__________________________________________________________\n" << endl;
+		cout << "\t\t\t\t\t Total Balances = " << totalBalances << "\n";
+	}
+	
 }
 
 
