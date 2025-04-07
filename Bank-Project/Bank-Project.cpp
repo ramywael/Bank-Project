@@ -453,28 +453,20 @@ void UploadDepositeToFile(vector<stClientInfo>& vClients) {
 	}
 }
 
-bool AddDeposite(vector<stClientInfo>& vClients,string accountNumber) {
-	int depositeAmount;
-	char userChoice;
-
-	cout << "Please Enter Deposite Number ? :";
-	cin >> depositeAmount;
-
-
+void AddDeposite(vector<stClientInfo>& vClients,double amount,string accountNumber) {
+	char userChoice='n';
 	cout << "Are You sure you want perform this transaction ? Y/N?";
 	cin >> userChoice;
 
 	if (tolower(userChoice) == 'y') {
 	for (stClientInfo& c : vClients) {
 		if (c.AccountNumber==accountNumber) {
-			c.AccountBalance += depositeAmount;
+			c.AccountBalance += amount;
 			SaveUpdatedDataToFile(vClients);
-			return true;
 		}
 	}
 }
-	
-	return false;
+
 }
 
 void DisplayHeaderDeposite() {
@@ -488,6 +480,7 @@ void MakeDeposite() {
 	vector<stClientInfo> vClients = ReadDataFromFile();
 	stClientInfo client;
 	string userInputAccountNumber;
+	double depositeAmount;
 	bool isFound;
 	do {
 		cout << "Please Enter Account Number ? :";
@@ -499,12 +492,9 @@ void MakeDeposite() {
 	} while (!isFound);	
 	if (isFound) {
 		ShowClientCard(client);
-		if (AddDeposite(vClients,userInputAccountNumber)) {
-			cout << "The Process of making deposite is successfully done\n";
-		}
-		else {
-			cout << "Sorry,SomeThing Wromg \n";
-		}
+		cout << "Please Enter Deposite Number ? :";
+		cin >> depositeAmount;
+		AddDeposite(vClients, depositeAmount,userInputAccountNumber);
 	}
 }
 
@@ -547,6 +537,52 @@ void TotalBalancesOption() {
 
 
 
+void DisplayHeaderWithdraw() {
+	cout << "\n---------------------------------------\n";
+	cout << setw(15) << right << "Withdraw Screen";
+	cout << "\n---------------------------------------\n";
+}
+
+double CheckWithdraw(vector<stClientInfo>& vClients,string userAccountNumber) {
+	double withdrawAmount;
+	cout << "Please enter withdraw amount ? :";
+	cin >> withdrawAmount;
+	for (stClientInfo& c : vClients) {
+		if (userAccountNumber == c.AccountNumber) {
+			while (c.AccountBalance < withdrawAmount) {
+				cout << "Amount Exceeds the balance ,You can withdraw up to :" << c.AccountBalance << "\n";
+				cout << "Please Enter another amount \n";
+				cin >> withdrawAmount;
+			}
+		}
+		return withdrawAmount;
+	}
+
+}
+
+void MakeWithdraw() {
+	DisplayHeaderWithdraw();
+	vector<stClientInfo> vClients = ReadDataFromFile();
+	stClientInfo client;
+	string userInputAccountNumber;
+	double withdrawAmount;
+	bool isFound;
+	do {
+		cout << "Please Enter Account Number ? :";
+		cin >> userInputAccountNumber;
+		isFound = FindClientNumber(userInputAccountNumber, vClients, client);
+		if (!isFound) {
+			cout << "Client With  [" << userInputAccountNumber << "] doesnot exist \n";
+		}
+	} while (!isFound);
+	if (isFound) {
+		ShowClientCard(client);
+		withdrawAmount= CheckWithdraw(vClients,userInputAccountNumber);
+		AddDeposite(vClients,withdrawAmount*-1,userInputAccountNumber);
+	}
+}
+
+
 void CheckUserInputTransactionType(short userInput) {
 	switch ((enUserTransactionType)userInput)
 	{
@@ -558,7 +594,7 @@ void CheckUserInputTransactionType(short userInput) {
 
 	case enUserTransactionType::Withdraw:
 		system("cls");
-		MakeDeposite();
+		MakeWithdraw();
 		GoBackToMainMenuTransaction();
 		break;
 
@@ -571,8 +607,7 @@ void CheckUserInputTransactionType(short userInput) {
 
 	case enUserTransactionType::MainMenu:
 		system("cls");
-		MakeDeposite();
-		GoBackToMainMenuTransaction();
+		DisplayMenu();
 		break;
 
 
