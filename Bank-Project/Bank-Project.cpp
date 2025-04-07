@@ -9,15 +9,23 @@ using namespace std;
 
 string const FileName = "MyFile.txt";
 void DisplayMenu();
+void DisplayTransactionMenu();
 enum enUserChoiceOption {
 	ShowClientList = 1,
 	AddNewClient = 2,
 	DeleteClient = 3,
 	UpdateClientInfo = 4,
 	FindClient = 5,
-	Exit = 6
+	Transaction = 6,
+	Exit = 7
 };
 
+enum enUserTransactionType {
+	Deposite = 1,
+	Withdraw = 2,
+	Totalbalances = 3,
+	MainMenu=4
+};
 struct stClientInfo {
 	string AccountNumber;
 	string Pincode;
@@ -62,9 +70,9 @@ stClientInfo ConvertRecordToLine(string line) {
 short ReadPostiveNumber() {
 	short number;
 	do {
-		cout << "\nChoose What do You want to choose ? [1-6] ? ";
+		cout << "\nChoose What do You want to choose ? [1-7] ? ";
 		cin >> number;
-	} while (number <= 0 || number > 6);
+	} while (number <= 0 || number > 7);
 	return number;
 }
 
@@ -208,7 +216,7 @@ void AddClients() {
 }
 
 
-bool FindClientNumber(string userInputAccNumber, vector<stClientInfo>& vClients,stClientInfo &client) {
+bool FindClientNumber(string userInputAccNumber, vector<stClientInfo>& vClients,stClientInfo& client) {
 	for (stClientInfo& c : vClients) {
 		if (c.AccountNumber == userInputAccNumber) {
 			 client=c;
@@ -332,7 +340,7 @@ vector<stClientInfo> UpdateClient(vector<stClientInfo>& vClients) {
 }
 
 
-void SaveUpdatedDataToFile(stClientInfo &client,vector<stClientInfo>& vClients) {
+void SaveUpdatedDataToFile(vector<stClientInfo>& vClients) {
 	fstream file;
 	string dataLine;
 	file.open(FileName, ios::out);
@@ -355,7 +363,7 @@ bool UpdateNewClient(vector<stClientInfo>& vClients, string userInputAccountNumb
 		if (tolower(userChoice) == 'y') {
 			MarkClientUpdate(vClients, userInputAccountNumber);
 			UpdateClient(vClients);
-			SaveUpdatedDataToFile(client,vClients);
+			SaveUpdatedDataToFile(vClients);
 
 			//Refresh
 			vClients = ReadDataFromFile();
@@ -417,6 +425,150 @@ void DisplayExitScreen() {
 	cout << "-----------------------------------\n";
 }
 
+
+
+
+
+short UserInputForTransactionType() {
+	short number;
+	do {
+		cout << "Choose What Do You Want To Do ? [1 - 4] ?";
+		cin >> number;
+	} while (number < 1 || number > 4);
+	return number;
+}
+
+
+
+void UploadDepositeToFile(vector<stClientInfo>& vClients) {
+	fstream file;
+	string dataLine;
+	file.open(FileName,ios::out);
+	if (file.is_open()) {
+		for (stClientInfo & client : vClients) {
+			dataLine=ConvertLineToRecord(client);
+			file << dataLine << "\n";
+		}
+		file.close();
+	}
+}
+
+bool AddDeposite(stClientInfo& client, vector<stClientInfo>& vClients,string accountNumber) {
+	int depositeAmount;
+	char userChoice;
+
+	cout << "Please Enter Deposite Number ? :";
+	cin >> depositeAmount;
+
+
+	cout << "Are You sure you want perform this transaction ? Y/N?";
+	cin >> userChoice;
+
+	if (tolower(userChoice) == 'y') {
+	for (stClientInfo& c : vClients) {
+		if (c.AccountNumber==accountNumber) {
+			c.AccountBalance += depositeAmount;
+			SaveUpdatedDataToFile(vClients);
+			return true;
+		}
+	}
+}
+	
+	return false;
+}
+
+void DisplayHeaderDeposite() {
+	cout << "\n---------------------------------------\n";
+	cout << setw(15) << right << "Deposite Screen";
+	cout << "\n---------------------------------------\n";
+}
+
+void MakeDeposite() {
+	DisplayHeaderDeposite();
+	vector<stClientInfo> vClients = ReadDataFromFile();
+	stClientInfo client;
+	string userInputAccountNumber;
+	bool isFound;
+	do {
+		cout << "Please Enter Account Number ? :";
+		cin >> userInputAccountNumber;
+		isFound = FindClientNumber(userInputAccountNumber, vClients, client);
+		if (!isFound) {
+			cout << "Client With  [" << userInputAccountNumber << "] doesnot exist \n";
+		}
+	} while (!isFound);	
+	if (isFound) {
+		ShowClientCard(client);
+		if (AddDeposite(client, vClients,userInputAccountNumber)) {
+			cout << "The Process of making deposite is successfully done\n";
+		}
+		else {
+			cout << "Sorry,SomeThing Wromg \n";
+		}
+	}
+}
+
+
+void GoBackToMainMenuTransaction() {
+	cout << "\n\n\n Press any key to go back to main menu ..\n";
+	system("pause");
+	DisplayTransactionMenu();
+}
+
+
+void CheckUserInputTransactionType(short userInput) {
+	switch ((enUserTransactionType)userInput)
+	{
+	case enUserTransactionType::Deposite:
+		system("cls");
+		MakeDeposite();
+		GoBackToMainMenuTransaction();
+		break;
+
+	case enUserTransactionType::Withdraw:
+		system("cls");
+		MakeDeposite();
+		GoBackToMainMenuTransaction();
+		break;
+
+
+	case enUserTransactionType::Totalbalances:
+		system("cls");
+		MakeDeposite();
+		GoBackToMainMenuTransaction();
+		break;
+
+	case enUserTransactionType::MainMenu:
+		system("cls");
+		MakeDeposite();
+		GoBackToMainMenuTransaction();
+		break;
+
+
+	default:
+		break;
+	}
+}
+
+void DisplayTransactionMenu() {
+	system("cls");
+	cout << "=====================================================\n";
+	cout << setw(40) << right << "Transaction Menu Screen \n";
+	cout << "=====================================================\n";
+	cout << "\t[1] Deposite.\n";
+	cout << "\t[2] Withdraw.\n";
+	cout << "\t[3] Total Balances.\n";
+	cout << "\t[4] Main Menu.\n";
+	cout << "===========================================\n";
+	CheckUserInputTransactionType(UserInputForTransactionType());
+}
+
+
+
+
+
+
+
 void ChechUserOption(short userOption) {
 	switch ((enUserChoiceOption)userOption)
 	{
@@ -454,6 +606,10 @@ void ChechUserOption(short userOption) {
 		GoBackToMainMenu();
 		break;
 
+	case enUserChoiceOption::Transaction:
+		system("cls");
+		DisplayTransactionMenu();
+		break;
 
 	case enUserChoiceOption::Exit:
 		system("cls");
@@ -469,6 +625,7 @@ void ChechUserOption(short userOption) {
 
 
 
+
 void DisplayMenu() {
 	system("cls");
 	cout << "===========================================\n";
@@ -479,11 +636,16 @@ void DisplayMenu() {
 	cout << "\t[3] Delete Client.\n";
 	cout << "\t[4] Update Client Info.\n";
 	cout << "\t[5] Find Client.\n";
-	cout << "\t[6] Exit.\n";
+	cout << "\t[6] Transactions.\n";
+	cout << "\t[7] Exit.\n";
 	cout << "===========================================\n";
 	ChechUserOption((enUserChoiceOption)ReadPostiveNumber());
 
 }
+
+
+
+
 
 int main() {
 	DisplayMenu();
